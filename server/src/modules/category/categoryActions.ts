@@ -1,46 +1,40 @@
+import categoryRepository from "./categoryRepository";
+
 // Some data to make the trick
 
 const categories = [
-    {
-      id: 1,
-      name: "Comédie",
-    },
-    {
-      id: 2,
-      name: "Science-Fiction",
-    },
-  ];
+  {
+    id: 1,
+    name: "Comédie",
+  },
+  {
+    id: 2,
+    name: "Science-Fiction",
+  },
+];
 
-  import type { RequestHandler } from "express";
+// Declare the actions
 
-  const browse: RequestHandler = (req, res) => {
-    if (req.query.q != null) {
-      const filteredPrograms = categories.filter((categories) =>
-        categories.name.includes(req.query.q as string)
-      );
+import type { RequestHandler } from "express";
 
-      res.json(filteredPrograms);
-    } else {
-      res.json(categories);
-    }
-  };
+const browse: RequestHandler = async (req, res) => {
+  const categoriesFromDB = await categoryRepository.readAll();
 
-  //*****************************************************
+  res.json(categoriesFromDB);
+};
 
-  const read: RequestHandler = (req, res) => {
-    const parsedId = Number.parseInt(req.params.id);
+const read: RequestHandler = (req, res) => {
+  const parsedId = Number.parseInt(req.params.id);
 
-    const program = categories.find((p) => p.id === parsedId);
+  const category = categories.find((p) => p.id === parsedId);
 
-    if (program != null) {
-      res.json(program);
-    } else {
-      res.sendStatus(404);
-    }
-  };
+  if (category != null) {
+    res.json(category);
+  } else {
+    res.sendStatus(404);
+  }
+};
 
-//*****************************************************
+// Export them to import them somewhere else
 
-  // Export it to import it somewhere else
-
-  export default { browse, read };
+export default { browse, read };
