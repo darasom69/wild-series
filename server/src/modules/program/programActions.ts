@@ -1,50 +1,120 @@
-import programRepository from "./programRepository";// Some data to make the trick
+import programRepository from "./programRepository";
+import type { RequestHandler } from "express";
+import Joi from "joi";
 
-const program = [
-    {
-      id: 1,
-      title: "The Good Place",
-      synopsis:
-        "À sa mort, Eleanor Shellstrop est envoyée au Bon Endroit, un paradis fantaisiste réservé aux individus exceptionnellement bienveillants. Or Eleanor n'est pas exactement une « bonne personne » et comprend vite qu'il y a eu erreur sur la personne. Avec l'aide de Chidi, sa prétendue âme sœur dans l'au-delà, la jeune femme est bien décidée à se redécouvrir.",
-      poster:
-        "https://img.betaseries.com/JwRqyGD3f9KvO_OlfIXHZUA3Ypw=/600x900/smart/https%3A%2F%2Fpictures.betaseries.com%2Ffonds%2Fposter%2F94857341d71c795c69b9e5b23c4bf3e7.jpg",
-      country: "USA",
-      year: 2016,
-    },
-    {
-      id: 2,
-      title: "Dark",
-      synopsis:
-        "Quatre familles affolées par la disparition d'un enfant cherchent des réponses et tombent sur un mystère impliquant trois générations qui finit de les déstabiliser.",
-      poster:
-        "https://img.betaseries.com/zDxfeFudy3HWjxa6J8QIED9iaVw=/600x900/smart/https%3A%2F%2Fpictures.betaseries.com%2Ffonds%2Fposter%2Fc47135385da176a87d0dd9177c5f6a41.jpg",
-      country: "Allemagne",
-      year: 2017,
-    },
-  ];
+// Validation schema for a program
+const programSchema = Joi.object({
+  title: Joi.string().max(255).required().messages({
+    "any.required": "The title is required.",
+    "string.empty": "The title is required.",
+    "string.max": "The title must be less than 255 characters.",
+  }),
+  synopsis: Joi.string().required().messages({
+    "any.required": "The synopsis is required.",
+    "string.empty": "The synopsis is required.",
+  }),
+  poster: Joi.string().uri().allow(null, "").optional().messages({
+    "string.uri": "The poster must be a valid URL.",
+  }),
+  country: Joi.string().max(100).required().messages({
+    "any.required": "The country is required.",
+    "string.empty": "The country is required.",
+    "string.max": "The country must be less than 100 characters.",
+  }),
+  year: Joi.number().integer().min(1800).max(new Date().getFullYear()).required().messages({
+    "any.required": "The year is required.",
+    "number.base": "The year must be a number.",
+    "number.min": "The year is not valid.",
+    "number.max": "The year cannot be in the future.",
+  }),
+  category_id: Joi.number().integer().required().messages({
+    "any.required": "The category is required.",
+    "number.base": "The category ID must be a number.",
+  }),
+});
 
-  // Declare the action
+// Middleware for validating request body with Joi
+const validate: RequestHandler = (req, res, next) => {
+  const { error } = programSchema.validate(req.body, { abortEarly: false });
 
-  import type { RequestHandler } from "express";
+  if (!error) return next();
 
-  const browse: RequestHandler = async (req, res) => {
-    const programsFromDB = await programRepository.readAll();
+  const validationErrors = error.details.map((err) => ({
+    field: err.path[0] as string,
+    message: err.message,
+  }));
 
-    res.json(programsFromDB);
-  };
+  res.status(400).json({ validationErrors });
+};
 
-  const read: RequestHandler = (req, res) => {
-    const parsedId = Number.parseInt(req.params.id);
+// Browse all programs
+const browse: RequestHandler = async (req, res, next) => {
+  try {
+    const programs = await programRepository.readAll();
+    res.json(programs);
+  } catch (err) {
+    next(err);
+  }
+};
 
-    const programs = program.find((p) => p.id === parsedId);
+// Read one program with its category
+const read: RequestHandler = async (req, res, next) => {
+  try {
+    const programId = Number(req.params.id);
+    const program = await programRepository.read(programId);
 
-    if (programs != null) {
-      res.json(programs);
-    } else {
+    if (!program) {
       res.sendStatus(404);
+    } else {
+      res.json(program);
     }
-  };
+  } catch (err) {
+    next(err);
+  }
+};
 
-  // Export them to import them somewhere else
+// Add a new program
+const add: RequestHandler = async (req, res, next) => {
+  try {
+    const newProgram = req.body;
+    const insertId = await programRepository.create(newProgram);
+    res.status(201).json({ insertId });
+  } catch (err) {
+    next(err);
+  }
+};
 
-  export default { browse, read };
+// Edit a program
+const edit: RequestHandler = async (req, res, next) => {
+  try {
+    const program = {
+      id: Number(req.params.id),
+      ...req.body,
+    };
+
+    const affectedRows = await programRepository.update(program);
+
+    if (affectedRows === 0) {
+      res.sendStatus(404);
+    } else {
+      res.sendStatus(204);
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Delete a program
+const destroy: RequestHandler = async (req, res, next) => {
+  try {
+    const programId = Number(req.params.id);
+    await programRepository.delete(programId);
+    res.sendStatus(204);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Export actions
+export default { browse, read, add, edit, destroy, validate };
+

@@ -7,12 +7,15 @@ import { RouterProvider, createBrowserRouter } from "react-router";
 
 // Import the main app component
 import App from "./App";
-import Programs from "./pages/Programs";
 import CategoryDetails from "./pages/CategoryDetails";
 import CategoryEdit from "./pages/CategoryEdit";
 import CategoryIndex from "./pages/CategoryIndex";
 
 
+import ProgramDetails from "./pages/ProgramDetails";
+import ProgramEdit from "./pages/ProgramEdit";
+import ProgramNew from "./pages/ProgramNew";
+import Programs from "./pages/Programs";
 // Import additional components for new routes
 // Try creating these components in the "pages" folder
 
@@ -28,20 +31,20 @@ const router = createBrowserRouter([
     path: "/", // The root path
     element: <App />, // Renders the App component for the home page
   },
-    {
-    path: "/programs",
-    element: <Programs />,
-  },
+  { path: "programs", element: <Programs /> },
+  { path: "programs/new", element: <ProgramNew /> },
+  { path: "programs/:id", element: <ProgramDetails /> },
+  { path: "programs/:id/edit", element: <ProgramEdit /> },
   {
-    path: "/programs",
+    path: "/categories/:categoryId", // Dynamic route for category details
     element: <CategoryDetails />,
   },
-    {
-    path: "/programs",
+  {
+    path: "/categories/:categoryId/edit", // Dynamic route for editing a category
     element: <CategoryEdit />,
   },
-    {
-    path: "/programs",
+  {
+    path: "/categories", // Route for the categories index page
     element: <CategoryIndex />,
   },
   // Try adding a new route! For example, "/about" with an About component
