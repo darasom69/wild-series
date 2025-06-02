@@ -1,17 +1,6 @@
+// Import access to data
+
 import categoryRepository from "./categoryRepository";
-
-// Some data to make the trick
-
-const categories = [
-  {
-    id: 1,
-    name: "Comédie",
-  },
-  {
-    id: 2,
-    name: "Science-Fiction",
-  },
-];
 
 // Declare the actions
 
@@ -42,6 +31,29 @@ const read: RequestHandler = async (req, res, next) => {
       res.sendStatus(404);
     } else {
       res.json(category);
+    }
+  } catch (err) {
+    // Pass any errors to the error-handling middleware
+    next(err);
+  }
+};
+
+const edit: RequestHandler = async (req, res, next) => {
+  try {
+    // Update a specific category based on the provided ID
+    const category = {
+      id: Number(req.params.id),
+      name: req.body.name,
+    };
+
+    const affectedRows = await categoryRepository.update(category);
+
+    // If the category is not found, respond with HTTP 404 (Not Found)
+    // Otherwise, respond with the category in JSON format
+    if (affectedRows === 0) {
+      res.sendStatus(404);
+    } else {
+      res.sendStatus(204);
     }
   } catch (err) {
     // Pass any errors to the error-handling middleware
@@ -84,4 +96,4 @@ const destroy: RequestHandler = async (req, res, next) => {
 
 // Export them to import them somewhere else
 
-export default { browse, read };
+export default { browse, read, edit, add, destroy };
