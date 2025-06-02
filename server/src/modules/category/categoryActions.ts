@@ -5,7 +5,34 @@ import categoryRepository from "./categoryRepository";
 // Declare the actions
 
 import type { RequestHandler } from "express";
+import Joi from "joi";
 
+// Validation schema with Joi
+const categorySchema = Joi.object({
+  name: Joi.string().max(255).required().messages({
+    "any.required": "The field is required.",
+    "string.empty": "The field is required.",
+    "string.max": "The field must be less than 255 characters.",
+  }),
+});
+
+// Middleware for validating request body with Joi
+const validate: RequestHandler = (req, res, next) => {
+  const { error } = categorySchema.validate(req.body, { abortEarly: false });
+
+  if (!error) {
+    return next();
+  }
+
+  const validationErrors = error.details.map((err) => ({
+    field: err.path[0] as string,
+    message: err.message,
+  }));
+
+  res.status(400).json({ validationErrors });
+};
+
+// Define the actions for the category module
 const browse: RequestHandler = async (req, res, next) => {
   try {
     // Fetch all categories
@@ -96,4 +123,4 @@ const destroy: RequestHandler = async (req, res, next) => {
 
 // Export them to import them somewhere else
 
-export default { browse, read, edit, add, destroy };
+export default { browse, read, edit, add, destroy, validate };
