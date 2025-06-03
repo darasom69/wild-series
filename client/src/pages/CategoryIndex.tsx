@@ -17,18 +17,19 @@ function CategoryIndex() {
       });
   }, []);
 
-  return (
-    <>
-      <Link to={"/categories/new"}>Ajouter</Link>
-      <ul>
-        {categories.map((category) => (
-          <li key={category.id}>
-            <Link to={`/categories/${category.id}`}>{category.name}</Link>
-          </li>
-        ))}
-      </ul>
-    </>
-  );
-}
+return (
+  <>
+    <h2>Liste des catégories</h2>
+    <Link to={"/categories/new"}>Ajouter</Link>
+    <ul>
+      {categories.map((category) => (
+        <li key={category.id}>
+          <Link to={`/categories/${category.id}`}>{category.name}</Link>
+        </li>
+      ))}
+    </ul>
+  </>
+);}
 
 export default CategoryIndex;
+

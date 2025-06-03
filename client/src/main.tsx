@@ -28,26 +28,19 @@ import Programs from "./pages/Programs";
 // You can add more routes as you build out your app!
 const router = createBrowserRouter([
   {
-    path: "/", // The root path
-    element: <App />, // Renders the App component for the home page
+    path: "/",
+    element: <App />, // App contient <Outlet />
+    children: [
+      { index: true, element: <div>Bienvenue sur Wild Series !</div> }, // pour "/"
+      { path: "categories", element: <CategoryIndex /> },
+      { path: "categories/:categoryId", element: <CategoryDetails /> },
+      { path: "categories/:categoryId/edit", element: <CategoryEdit /> },
+      { path: "programs", element: <Programs /> },
+      { path: "programs/new", element: <ProgramNew /> },
+      { path: "programs/:id", element: <ProgramDetails /> },
+      { path: "programs/:id/edit", element: <ProgramEdit /> },
+    ],
   },
-  { path: "programs", element: <Programs /> },
-  { path: "programs/new", element: <ProgramNew /> },
-  { path: "programs/:id", element: <ProgramDetails /> },
-  { path: "programs/:id/edit", element: <ProgramEdit /> },
-  {
-    path: "/categories/:categoryId", // Dynamic route for category details
-    element: <CategoryDetails />,
-  },
-  {
-    path: "/categories/:categoryId/edit", // Dynamic route for editing a category
-    element: <CategoryEdit />,
-  },
-  {
-    path: "/categories", // Route for the categories index page
-    element: <CategoryIndex />,
-  },
-  // Try adding a new route! For example, "/about" with an About component
 ]);
 
 /* ************************************************************************* */
