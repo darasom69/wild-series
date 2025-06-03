@@ -18,6 +18,9 @@ import programActions from "./modules/program/programActions";
 
 router.get("/api/programs", programActions.browse);
 router.get("/api/programs/:id", programActions.read);
+router.put("/api/programs/:id", programActions.validate, programActions.edit);
+router.post("/api/programs", programActions.validate, programActions.add);
+router.delete("/api/programs/:id", programActions.destroy);
 
 /* ************************************************************************* */
 import categoryActions from "./modules/category/categoryActions";
